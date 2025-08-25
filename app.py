@@ -383,8 +383,9 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    pass  # o simplemente comenta toda esta sección
-    # app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    port = int(os.environ.get("PORT", 5000))  # ✅ toma PORT de Railway o usa 5000 local
+    app.run(host="0.0.0.0", port=port)
+
 
 
 

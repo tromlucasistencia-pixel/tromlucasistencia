@@ -17,11 +17,11 @@ app.secret_key = 'clave_secreta_segura'
 
 
 db_config = {
-    "host": "crossover.proxy.rlwy.net",
+    "host": "turntable.proxy.rlwy.net",
     "user": "root",
-    "password": "ctXmVXKaEgqbrgJcPgxmZFOnjSpAIOSs",
+    "password": "MFezbJNQdUFOqpXsUjuENWzVihqMhHcK",
     "database": "railway",
-    "port": 47507
+    "port": 39807 
 }
 
 

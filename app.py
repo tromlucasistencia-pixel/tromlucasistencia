@@ -613,14 +613,14 @@ def registrar_asistencia():
         nombre_archivo = f"{nombre}_{apellido}_{hoy.strftime('%Y%m%d')}.jpg"
 
         # Validación de la ubicación
-        lat_min = 20.6123
-        lat_max = 20.6133
-        lon_min = -101.2385
-        lon_max = -101.2375
+        lat_min = 20.60944582381474
+        lat_max = 20.612233120077464
+        lon_min = -101.23951057525075
+        lon_max = -101.23592777774333
 
         ubicacion = "Ubicación fuera de la zona de trabajo"
         if lat_min <= float(latitud) <= lat_max and lon_min <= float(longitud) <= lon_max:
-            ubicacion = "Ubicación en Mazda"
+            ubicacion = "Ubicación en Zona de trabajo"
 
         if registro:
             carpeta = "fotos/salida"

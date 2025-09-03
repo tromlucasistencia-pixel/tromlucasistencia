@@ -556,6 +556,7 @@ def registrar_asistencia():
         img = cv2.resize(img, (800, 600))
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+        # Detección de rostro con rotación y espejado
         rostros = face_recognition.face_encodings(rgb)
         if len(rostros) == 0:
             for angle in [90, 180, 270]:
@@ -568,7 +569,6 @@ def registrar_asistencia():
                 if len(rostros) > 0:
                     rgb = rotated
                     break
-
         if len(rostros) == 0:
             espejada = cv2.flip(rgb, 1)
             rostros = face_recognition.face_encodings(espejada)
@@ -607,40 +607,47 @@ def registrar_asistencia():
 
         nombre_archivo = f"{nombre}_{apellido}_{hoy.strftime('%Y%m%d')}.jpg"
 
-        # ✅ NUEVA VALIDACIÓN DE UBICACIONES SEPARADAS
+        # === Zona de ubicación ===
         lat = float(latitud)
         lon = float(longitud)
 
-        # Zona AIRES (rango ampliado)
-        lat_min_aires = 20.6110
-        lat_max_aires = 20.6127
-        lon_min_aires = -101.2372
-        lon_max_aires = -101.2357
+        # Zona AIRES
+        aires_lat_min = 20.6113
+        aires_lat_max = 20.6125
+        aires_lon_min = -101.2370
+        aires_lon_max = -101.2356
 
-        # Zona PINTURA (rango ampliado)
-        lat_min_pintura = 20.6090
-        lat_max_pintura = 20.6110
-        lon_min_pintura = -101.2400
-        lon_max_pintura = -101.2375
+        # Zona PINTURA
+        pintura_lat_min = 20.6095
+        pintura_lat_max = 20.6110
+        pintura_lon_min = -101.2395
+        pintura_lon_max = -101.2375
 
-        # Determinar ubicación
-        if lat_min_aires <= lat <= lat_max_aires and lon_min_aires <= lon <= lon_max_aires:
-            ubicacion = "Ubicación en zona de AIRES"
-        elif lat_min_pintura <= lat <= lat_max_pintura and lon_min_pintura <= lon <= lon_max_pintura:
-            ubicacion = "Ubicación en zona de PINTURA"
+        if aires_lat_min <= lat <= aires_lat_max and aires_lon_min <= lon <= aires_lon_max:
+            ubicacion = "Ubicación en zona AIRES"
+        elif pintura_lat_min <= lat <= pintura_lat_max and pintura_lon_min <= lon <= pintura_lon_max:
+            ubicacion = "Ubicación en zona PINTURA"
         else:
             ubicacion = "Ubicación fuera de la zona de trabajo"
 
+        # === Registro de salida ===
         if registro:
             carpeta = "fotos/salida"
             ruta = os.path.join(carpeta, nombre_archivo)
             cv2.imwrite(ruta, img)
 
-            cursor.execute("UPDATE asistencia SET hora_salida = %s, ubicacion = %s WHERE id_asistencia = %s", (hora_actual, ubicacion, registro[0]))
+            cursor.execute("""
+                UPDATE asistencia 
+                SET hora_salida = %s, ubicacion = %s, latitud = %s, longitud = %s
+                WHERE id_asistencia = %s
+            """, (hora_actual, ubicacion, latitud, longitud, registro[0]))
+
             conn.commit()
             cursor.close()
             conn.close()
             return jsonify({'status': 'ok', 'message': f'🕒 Salida registrada de {nombre}'})
+
+        # === Registro de entrada ===
         else:
             carpeta = "fotos/entrada"
             ruta = os.path.join(carpeta, nombre_archivo)
@@ -650,6 +657,7 @@ def registrar_asistencia():
                 INSERT INTO asistencia (codigo_emp, vector, fecha, hora_entrada, latitud, longitud, ubicacion)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (codigo_emp, json.dumps(vector_nuevo.tolist()), hoy, hora_actual, latitud, longitud, ubicacion))
+
             conn.commit()
             cursor.close()
             conn.close()
@@ -657,6 +665,7 @@ def registrar_asistencia():
 
     except Exception as e:
         return jsonify({'status': 'fail', 'message': f'❌ Error: {str(e)}'})
+
 
 
 

@@ -537,6 +537,7 @@ def registrar():
 def asistencia_html():
     return render_template('asistencia.html')
 
+    
 # ---------------- ASISTENCIA Y PARA EDITAR LATITUD LONGITUD ----------------
 @app.route('/registrar_asistencia', methods=['POST'])
 def registrar_asistencia():
@@ -552,12 +553,9 @@ def registrar_asistencia():
         nparr = np.frombuffer(imagen_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-        # Redimensionar la imagen antes de procesarla
         img = cv2.resize(img, (800, 600))
-
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        # 👉 INTENTAMOS ROTAR SI NO DETECTA ROSTRO 👇
         rostros = face_recognition.face_encodings(rgb)
         if len(rostros) == 0:
             for angle in [90, 180, 270]:
@@ -570,18 +568,15 @@ def registrar_asistencia():
                 if len(rostros) > 0:
                     rgb = rotated
                     break
-        # 🔽 PÉGALO AQUÍ
+
         if len(rostros) == 0:
-          espejada = cv2.flip(rgb, 1)
-          rostros = face_recognition.face_encodings(espejada)
-          if len(rostros) > 0:
-                    rgb = espejada
+            espejada = cv2.flip(rgb, 1)
+            rostros = face_recognition.face_encodings(espejada)
+            if len(rostros) > 0:
+                rgb = espejada
 
         if len(rostros) == 0:
             return jsonify({'status': 'fail', 'message': '❌ No se detectó rostro. Asegúrate de estar bien iluminado, de frente, y no muy cerca de la cámara.'})
-
-        # 👉 FIN DE CAMBIO 👆
-
 
         vector_nuevo = rostros[0]
 
@@ -604,24 +599,37 @@ def registrar_asistencia():
 
         matches.sort(key=lambda x: x[3])
         codigo_emp, nombre, apellido, _ = matches[0]
-        hoy = datetime.now(tz).date()             # ✅ Fecha con zona horaria
-        hora_actual = datetime.now(tz).time()     # ✅ Hora con zona horaria
+        hoy = datetime.now(tz).date()
+        hora_actual = datetime.now(tz).time()
 
         cursor.execute("SELECT id_asistencia FROM asistencia WHERE fecha = %s AND codigo_emp = %s", (hoy, codigo_emp))
         registro = cursor.fetchone()
 
         nombre_archivo = f"{nombre}_{apellido}_{hoy.strftime('%Y%m%d')}.jpg"
-        
-        
-        # Validación de la ubicación
-        lat_min = 20.60944582381474
-        lat_max = 20.612233120077464
-        lon_min = -101.23951057525075
-        lon_max = -101.23592777774333
 
-        ubicacion = "Ubicación fuera de la zona de trabajo"
-        if lat_min <= float(latitud) <= lat_max and lon_min <= float(longitud) <= lon_max:
-            ubicacion = "Ubicación en Zona de trabajo"
+        # ✅ NUEVA VALIDACIÓN DE UBICACIONES SEPARADAS
+        lat = float(latitud)
+        lon = float(longitud)
+
+        # Zona AIRES (rango ampliado)
+        lat_min_aires = 20.6110
+        lat_max_aires = 20.6127
+        lon_min_aires = -101.2372
+        lon_max_aires = -101.2357
+
+        # Zona PINTURA (rango ampliado)
+        lat_min_pintura = 20.6090
+        lat_max_pintura = 20.6110
+        lon_min_pintura = -101.2400
+        lon_max_pintura = -101.2375
+
+        # Determinar ubicación
+        if lat_min_aires <= lat <= lat_max_aires and lon_min_aires <= lon <= lon_max_aires:
+            ubicacion = "Ubicación en zona de AIRES"
+        elif lat_min_pintura <= lat <= lat_max_pintura and lon_min_pintura <= lon <= lon_max_pintura:
+            ubicacion = "Ubicación en zona de PINTURA"
+        else:
+            ubicacion = "Ubicación fuera de la zona de trabajo"
 
         if registro:
             carpeta = "fotos/salida"
@@ -649,6 +657,7 @@ def registrar_asistencia():
 
     except Exception as e:
         return jsonify({'status': 'fail', 'message': f'❌ Error: {str(e)}'})
+
 
 
 

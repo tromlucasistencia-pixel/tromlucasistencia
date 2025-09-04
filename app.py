@@ -618,10 +618,10 @@ def registrar_asistencia():
         aires_lon_max = -101.2356
 
         # Zona PINTURA
-        pintura_lat_min = 20.6095
-        pintura_lat_max = 20.6110
-        pintura_lon_min = -101.2395
-        pintura_lon_max = -101.2375
+        pintura_lat_min = 20.5560
+        pintura_lat_max = 20.5570
+        pintura_lon_min = -101.2050
+        pintura_lon_max = -101.2035
 
         if aires_lat_min <= lat <= aires_lat_max and aires_lon_min <= lon <= aires_lon_max:
             ubicacion = "Ubicación en zona AIRES"

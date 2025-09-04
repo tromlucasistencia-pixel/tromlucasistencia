@@ -635,13 +635,7 @@ def registrar_asistencia():
             carpeta = "fotos/salida"
             ruta = os.path.join(carpeta, nombre_archivo)
             cv2.imwrite(ruta, img)
-
-            cursor.execute("""
-                UPDATE asistencia 
-                SET hora_salida = %s, ubicacion = %s, latitud = %s, longitud = %s
-                WHERE id_asistencia = %s
-            """, (hora_actual, ubicacion, latitud, longitud, registro[0]))
-
+            cursor.execute("UPDATE asistencia SET hora_salida = %s WHERE id_asistencia = %s", (hora_actual,registro[0]))
             conn.commit()
             cursor.close()
             conn.close()

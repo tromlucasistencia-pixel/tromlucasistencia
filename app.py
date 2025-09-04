@@ -612,10 +612,10 @@ def registrar_asistencia():
         lon = float(longitud)
 
         # Zona AIRES
-        aires_lat_min = 20.5560
-        aires_lat_max = 20.5570
-        aires_lon_min = -101.2050
-        aires_lon_max = -101.2035
+        aires_lat_min = 20.6113
+        aires_lat_max = 20.6125
+        aires_lon_min = -101.2370
+        aires_lon_max = -101.2356
 
         # Zona PINTURA
         pintura_lat_min = 20.6095

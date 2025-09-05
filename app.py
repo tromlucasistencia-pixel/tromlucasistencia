@@ -235,7 +235,7 @@ def registrar_asistencia():
         elif pintura_lat_min <= lat <= pintura_lat_max and pintura_lon_min <= lon <= pintura_lon_max:
             ubicacion = "Ubicación en zona PINTURA"
         else:
-            ubicacion = "Ubicación fuera de la zona de trabajo"
+            ubicacion = "Ubicación dentro de la zona de trabajo"
 
         # === Registro de salida ===
         if registro:

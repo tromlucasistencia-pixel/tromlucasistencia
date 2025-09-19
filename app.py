@@ -54,7 +54,7 @@ tz = pytz.timezone('America/Mexico_City')  # ✅ Zona horaria definida aquí
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == 'Tromluc_registros2025':
+        if password == 'Tromluc_registroadmin':
             return redirect(url_for('registro'))
         elif password == 'admin2':
             return redirect(url_for('asistencia_html'))

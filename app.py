@@ -313,13 +313,12 @@ def regresar_registros():
 @app.route('/descargar_excel')
 def descargar_excel():
     try:
-        fecha = request.args.get('fecha')  # Obtener la fecha del filtro
+        fecha_inicio = request.args.get('fecha_inicio')  # Nuevo
+        fecha_fin = request.args.get('fecha_fin')        # Nuevo
 
-        # Crear conexión
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Consulta base
         query = '''
             SELECT 
                 e.codigo_emp, 
@@ -335,15 +334,14 @@ def descargar_excel():
         '''
         params = ()
 
-        # Si hay filtro de fecha, agregar condición
-        if fecha:
-            query += " WHERE a.fecha = %s"
-            params = (fecha,)
+        # Agregar filtro si hay fechas
+        if fecha_inicio and fecha_fin:
+            query += " WHERE a.fecha BETWEEN %s AND %s"
+            params = (fecha_inicio, fecha_fin)
 
         cursor.execute(query, params)
         registros = cursor.fetchall()
 
-        # Cerrar conexión temporalmente
         cursor.close()
         conn.close()
 
@@ -363,6 +361,8 @@ def descargar_excel():
         def format_timedelta(td):
             if pd.isnull(td):
                 return ''
+            if isinstance(td, str):
+                return td
             total_seconds = int(td.total_seconds())
             horas = total_seconds // 3600
             minutos = (total_seconds % 3600) // 60
@@ -387,6 +387,7 @@ def descargar_excel():
 
     except Exception as e:
         return f"❌ Error al generar Excel: {str(e)}"
+
 
 
 

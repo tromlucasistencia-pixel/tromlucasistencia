@@ -276,6 +276,13 @@ def mostrar_registros():
     fecha_fin = request.args.get('fecha_fin')
     id_tipo = request.args.get('id_tipo')  # NUEVO: departamento
 
+    # ✅ Convertimos a entero para evitar problemas
+    if id_tipo:
+        try:
+            id_tipo = int(id_tipo)
+        except ValueError:
+            id_tipo = None
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -294,7 +301,7 @@ def mostrar_registros():
         params.extend([fecha_inicio, fecha_fin])
 
     # Filtro por departamento
-    if id_tipo:
+    if id_tipo in [1, 3]:  # solo PINTURA o AIRES
         if 'WHERE' in query:
             query += " AND e.id_tipo = %s"
         else:

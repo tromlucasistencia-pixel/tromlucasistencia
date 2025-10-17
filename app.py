@@ -271,14 +271,12 @@ def registrar_asistencia():
 
 
 
-# ---------------- REGISTROS CON FILTRO POR DEPARTAMENTO Y FECHA ----------------
 @app.route('/registros')
 def mostrar_registros():
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
-    id_tipo = request.args.get('id_tipo')  # departamento
+    id_tipo = request.args.get('id_tipo')  
 
-    # Convertimos a entero para evitar problemas
     if id_tipo:
         try:
             id_tipo = int(id_tipo)
@@ -303,12 +301,12 @@ def mostrar_registros():
         condiciones.append("a.fecha BETWEEN %s AND %s")
         params.extend([fecha_inicio, fecha_fin])
 
-    # Filtro por departamento (solo PINTURA o AIRES)
+    # Filtro por departamento
     if id_tipo in [1, 3]:
         condiciones.append("e.id_tipo = %s")
         params.append(id_tipo)
 
-    # Unir condiciones si existen
+    # Aplicar condiciones
     if condiciones:
         query += " WHERE " + " AND ".join(condiciones)
 
@@ -320,6 +318,7 @@ def mostrar_registros():
     conn.close()
 
     return render_template('registros.html', registros=registros)
+
 
 
 

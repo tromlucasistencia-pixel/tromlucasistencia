@@ -268,18 +268,11 @@ def registrar_asistencia():
         return jsonify({'status': 'fail', 'message': f'❌ Error: {str(e)}'})
 
 
-
 @app.route('/registros')
 def mostrar_registros():
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
     id_tipo = request.args.get('id_tipo')
-
-    # Convertir id_tipo a entero
-    try:
-        id_tipo = int(id_tipo)
-    except (ValueError, TypeError):
-        id_tipo = None
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -290,21 +283,18 @@ def mostrar_registros():
         FROM asistencia a
         JOIN emp_activos e ON a.codigo_emp = e.codigo_emp
     """
-
-    condiciones = []
     params = []
 
-    # Filtrar siempre por departamento si es 1 o 3
-    if id_tipo in [1, 3]:
-        condiciones.append("e.id_tipo = %s")
-        params.append(id_tipo)
+    condiciones = []
 
-    # Filtrar por fechas si se proporcionan
     if fecha_inicio and fecha_fin:
         condiciones.append("a.fecha BETWEEN %s AND %s")
         params.extend([fecha_inicio, fecha_fin])
 
-    # Aplicar condiciones combinadas con AND
+    if id_tipo in ['1', '3']:  # 👈 Aquí lo tratamos como string
+        condiciones.append("e.id_tipo = %s")
+        params.append(id_tipo)
+
     if condiciones:
         query += " WHERE " + " AND ".join(condiciones)
 

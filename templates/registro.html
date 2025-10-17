@@ -50,10 +50,13 @@
           <select id="tipo_usuario" name="tipo_usuario" required>
             <option value="" disabled selected>Selecciona un tipo</option>
             {% for id_tipo, tipo in tipos %}
-              <option value="{{ tipo}}">{{ tipo }}</option>
+            <option value="{{ id_tipo }}">{{ tipo }}</option> <!-- Ahora envía el ID, no el nombre -->
             {% endfor %}
           </select>
+
         </div>
+
+
 
         <!-- CÁMARA -->
         <label>Foto:</label>
@@ -67,8 +70,10 @@
       </form>
 
       <!-- MODAL -->
-      <div id="respuestaModal" style="display:none; background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; justify-content: center; align-items: center;">
-        <div style="background-color: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 500px; text-align: center;">
+      <div id="respuestaModal"
+        style="display:none; background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; justify-content: center; align-items: center;">
+        <div
+          style="background-color: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 500px; text-align: center;">
           <h3 id="respuestaMensaje"></h3>
           <button onclick="cerrarModal()">Cerrar</button>
         </div>
@@ -76,9 +81,9 @@
 
       <div id="mensajeFlash" style="display:none;">
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {{ messages[0][1] }}
-          {% endif %}
+        {% if messages %}
+        {{ messages[0][1] }}
+        {% endif %}
         {% endwith %}
       </div>
     </div>
@@ -105,64 +110,63 @@
 
 
   <!-- SCRIPT CÁMARA CON CORRECCIÓN EXIF -->
- <script>
-  const abrirCamaraBtn = document.getElementById('abrirCamaraBtn');
-  const video = document.getElementById('video');
-  const tomarFotoBtn = document.getElementById('tomarFoto');
-  const canvas = document.getElementById('canvas');
-  const fotoInput = document.getElementById('fotoInput');
-  let stream;
+  <script>
+    const abrirCamaraBtn = document.getElementById('abrirCamaraBtn');
+    const video = document.getElementById('video');
+    const tomarFotoBtn = document.getElementById('tomarFoto');
+    const canvas = document.getElementById('canvas');
+    const fotoInput = document.getElementById('fotoInput');
+    let stream;
 
-  abrirCamaraBtn.addEventListener('click', async function () {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" } // 🔄 Forzar cámara frontal
-      });
-      video.srcObject = stream;
-      video.style.display = 'block';
-      tomarFotoBtn.style.display = 'inline-block';
-      abrirCamaraBtn.style.display = 'none';
-    } catch (err) {
-      alert("No se pudo acceder a la cámara: " + err.message);
-    }
-  });
+    abrirCamaraBtn.addEventListener('click', async function () {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" } // 🔄 Forzar cámara frontal
+        });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        tomarFotoBtn.style.display = 'inline-block';
+        abrirCamaraBtn.style.display = 'none';
+      } catch (err) {
+        alert("No se pudo acceder a la cámara: " + err.message);
+      }
+    });
 
-  tomarFotoBtn.addEventListener('click', () => {
-    const ctx = canvas.getContext('2d');
-    const width = 320;
-    const height = 240;
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(video, 0, 0, width, height);
+    tomarFotoBtn.addEventListener('click', () => {
+      const ctx = canvas.getContext('2d');
+      const width = 320;
+      const height = 240;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(video, 0, 0, width, height);
 
-    const dataURL = canvas.toDataURL('image/jpeg', 0.6);
-    fotoInput.value = dataURL;
+      const dataURL = canvas.toDataURL('image/jpeg', 0.6);
+      fotoInput.value = dataURL;
 
-    // 👁️ Mostrar previsualización (opcional pero útil para pruebas)
-    const preview = document.getElementById('previewImg');
-    if (preview) {
-      preview.src = dataURL;
-    } else {
-      const imgPreview = document.createElement('img');
-      imgPreview.id = 'previewImg';
-      imgPreview.src = dataURL;
-      imgPreview.style.marginTop = '10px';
-      imgPreview.style.maxWidth = '100%';
-      document.querySelector('.form-container').appendChild(imgPreview);
-    }
+      // 👁️ Mostrar previsualización (opcional pero útil para pruebas)
+      const preview = document.getElementById('previewImg');
+      if (preview) {
+        preview.src = dataURL;
+      } else {
+        const imgPreview = document.createElement('img');
+        imgPreview.id = 'previewImg';
+        imgPreview.src = dataURL;
+        imgPreview.style.marginTop = '10px';
+        imgPreview.style.maxWidth = '100%';
+        document.querySelector('.form-container').appendChild(imgPreview);
+      }
 
-    alert("📸 Foto capturada. Ahora envía el formulario.");
+      alert("📸 Foto capturada. Ahora envía el formulario.");
 
-    // Detener cámara
-    stream.getTracks().forEach(track => track.stop());
-    video.style.display = 'none';
-    tomarFotoBtn.style.display = 'none';
-    abrirCamaraBtn.style.display = 'inline-block';
-  });
-</script>
+      // Detener cámara
+      stream.getTracks().forEach(track => track.stop());
+      video.style.display = 'none';
+      tomarFotoBtn.style.display = 'none';
+      abrirCamaraBtn.style.display = 'inline-block';
+    });
+  </script>
 
 
 </body>
 
 </html>
-

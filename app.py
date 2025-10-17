@@ -274,19 +274,19 @@ def registrar_asistencia():
 def mostrar_registros():
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
-    id_tipo = request.args.get('id_tipo')  # NUEVO: departamento
+    id_tipo = request.args.get('id_tipo')  # departamento
 
-    # ✅ Convertimos a entero para evitar problemas
-    if id_tipo:
-        try:
-            id_tipo = int(id_tipo)
-        except ValueError:
+    # Convertimos a entero y validamos solo PINTURA y AIRES
+    try:
+        id_tipo = int(id_tipo)
+        if id_tipo not in [1, 3]:
             id_tipo = None
+    except (TypeError, ValueError):
+        id_tipo = None
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Consulta base
     query = """
         SELECT e.codigo_emp, e.nombre, e.apellido_pa, e.apellido_ma, 
                a.ubicacion, a.vector, a.fecha, a.hora_entrada, a.hora_salida
@@ -295,22 +295,20 @@ def mostrar_registros():
     """
     params = []
 
-    # Filtro por fecha
+    filtros = []
     if fecha_inicio and fecha_fin:
-        query += " WHERE a.fecha BETWEEN %s AND %s"
+        filtros.append("a.fecha BETWEEN %s AND %s")
         params.extend([fecha_inicio, fecha_fin])
 
-    # Filtro por departamento
-    if id_tipo in [1, 3]:  # solo PINTURA o AIRES
-        if 'WHERE' in query:
-            query += " AND e.id_tipo = %s"
-        else:
-            query += " WHERE e.id_tipo = %s"
+    if id_tipo:
+        filtros.append("e.id_tipo = %s")
         params.append(id_tipo)
+
+    if filtros:
+        query += " WHERE " + " AND ".join(filtros)
 
     query += " ORDER BY a.fecha DESC, a.hora_entrada ASC"
 
-    # Ejecutar consulta
     cursor.execute(query, params)
     registros = cursor.fetchall()
     cursor.close()

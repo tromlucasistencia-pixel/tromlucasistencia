@@ -269,36 +269,51 @@ def registrar_asistencia():
 
 
 
-@app.route('/mostrar_registros')
+@app.route('/registros')
 def mostrar_registros():
-    id_tipo = request.args.get('id_tipo', type=int)
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
+    id_tipo = request.args.get('id_tipo')
+
+    # Convertir id_tipo a entero
+    try:
+        id_tipo = int(id_tipo)
+    except (ValueError, TypeError):
+        id_tipo = None
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
     query = """
-        SELECT e.codigo_empleado, e.nombre, e.apellido_paterno, e.apellido_materno, 
-               t.nombre_tipo, r.foto, r.fecha, r.hora_entrada, r.hora_salida
-        FROM registros r
-        JOIN empleados e ON e.id_empleado = r.id_empleado
-        JOIN tipo_empleado t ON t.id_tipo = e.id_tipo
-        WHERE 1=1
+        SELECT e.codigo_emp, e.nombre, e.apellido_pa, e.apellido_ma, 
+               a.ubicacion, a.vector, a.fecha, a.hora_entrada, a.hora_salida
+        FROM asistencia a
+        JOIN emp_activos e ON a.codigo_emp = e.codigo_emp
     """
+
+    condiciones = []
     params = []
 
-    if id_tipo:
-        query += " AND e.id_tipo = %s"
+    # Filtrar siempre por departamento si es 1 o 3
+    if id_tipo in [1, 3]:
+        condiciones.append("e.id_tipo = %s")
         params.append(id_tipo)
 
+    # Filtrar por fechas si se proporcionan
     if fecha_inicio and fecha_fin:
-        query += " AND r.fecha BETWEEN %s AND %s"
+        condiciones.append("a.fecha BETWEEN %s AND %s")
         params.extend([fecha_inicio, fecha_fin])
 
-    query += " ORDER BY r.fecha DESC, r.hora_entrada DESC"
+    # Aplicar condiciones combinadas con AND
+    if condiciones:
+        query += " WHERE " + " AND ".join(condiciones)
 
-    cursor = mysql.connection.cursor()
+    query += " ORDER BY a.fecha DESC, a.hora_entrada ASC"
+
     cursor.execute(query, params)
     registros = cursor.fetchall()
     cursor.close()
+    conn.close()
 
     return render_template('registros.html', registros=registros)
 

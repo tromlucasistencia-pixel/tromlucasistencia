@@ -21,12 +21,13 @@
         <img src="{{ url_for('static', filename='imgs/logo.png') }}" alt="Logo">
       </div>
       <div class="nav-right">
-        <a href="{{ url_for('mostrar_registros') }}">
+        <a href="{{ url_for('mostrar_registros') }}?id_tipo=1">
           <button type="button">Tabla Registros PINTURA</button>
         </a>
-        <a href="{{ url_for('mostrar_registros') }}">
+        <a href="{{ url_for('mostrar_registros') }}?id_tipo=3">
           <button type="button">Tabla Registros AIRES</button>
         </a>
+
         <button onclick="window.location.href='/logout';">Cerrar sesión</button>
 
       </div>

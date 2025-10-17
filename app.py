@@ -269,38 +269,48 @@ def registrar_asistencia():
 
 
 # ---------------- REGISTROS CON FILTRO 7-8-2025----------------
-
+# ---------------- REGISTROS CON FILTRO POR DEPARTAMENTO Y FECHA ----------------
 @app.route('/registros')
 def mostrar_registros():
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
+    id_tipo = request.args.get('id_tipo')  # NUEVO: departamento
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    if fecha_inicio and fecha_fin:
-        cursor.execute("""
-            SELECT e.codigo_emp, e.nombre, e.apellido_pa, e.apellido_ma, 
-                   a.ubicacion, a.vector, a.fecha, a.hora_entrada, a.hora_salida
-            FROM asistencia a
-            JOIN emp_activos e ON a.codigo_emp = e.codigo_emp
-            WHERE a.fecha BETWEEN %s AND %s
-            ORDER BY a.fecha DESC, a.hora_entrada ASC
-        """, (fecha_inicio, fecha_fin))
-    else:
-        cursor.execute("""
-            SELECT e.codigo_emp, e.nombre, e.apellido_pa, e.apellido_ma, 
-                   a.ubicacion, a.vector, a.fecha, a.hora_entrada, a.hora_salida
-            FROM asistencia a
-            JOIN emp_activos e ON a.codigo_emp = e.codigo_emp
-            ORDER BY a.fecha DESC, a.hora_entrada ASC
-        """)
+    # Consulta base
+    query = """
+        SELECT e.codigo_emp, e.nombre, e.apellido_pa, e.apellido_ma, 
+               a.ubicacion, a.vector, a.fecha, a.hora_entrada, a.hora_salida
+        FROM asistencia a
+        JOIN emp_activos e ON a.codigo_emp = e.codigo_emp
+    """
+    params = []
 
+    # Filtro por fecha
+    if fecha_inicio and fecha_fin:
+        query += " WHERE a.fecha BETWEEN %s AND %s"
+        params.extend([fecha_inicio, fecha_fin])
+
+    # Filtro por departamento
+    if id_tipo:
+        if 'WHERE' in query:
+            query += " AND e.id_tipo = %s"
+        else:
+            query += " WHERE e.id_tipo = %s"
+        params.append(id_tipo)
+
+    query += " ORDER BY a.fecha DESC, a.hora_entrada ASC"
+
+    # Ejecutar consulta
+    cursor.execute(query, params)
     registros = cursor.fetchall()
     cursor.close()
     conn.close()
 
     return render_template('registros.html', registros=registros)
+
 
 
 # ---------------- REGRESAR / DESCARGAR ----------------

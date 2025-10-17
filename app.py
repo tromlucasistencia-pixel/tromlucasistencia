@@ -270,13 +270,14 @@ def registrar_asistencia():
 
 
 
-
+#Registrar
 @app.route('/registros')
 def mostrar_registros():
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
-    id_tipo = request.args.get('id_tipo')  
+    id_tipo = request.args.get('id_tipo')
 
+    # ✅ Convertir id_tipo a int si existe
     if id_tipo:
         try:
             id_tipo = int(id_tipo)
@@ -296,15 +297,15 @@ def mostrar_registros():
     condiciones = []
     params = []
 
-    # Filtro por fecha
-    if fecha_inicio and fecha_fin:
-        condiciones.append("a.fecha BETWEEN %s AND %s")
-        params.extend([fecha_inicio, fecha_fin])
-
-    # Filtro por departamento
+    # Filtro obligatorio por departamento si es 1 o 3
     if id_tipo in [1, 3]:
         condiciones.append("e.id_tipo = %s")
         params.append(id_tipo)
+
+    # Filtro opcional por fechas
+    if fecha_inicio and fecha_fin:
+        condiciones.append("a.fecha BETWEEN %s AND %s")
+        params.extend([fecha_inicio, fecha_fin])
 
     # Aplicar condiciones
     if condiciones:

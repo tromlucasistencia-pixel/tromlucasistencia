@@ -268,7 +268,9 @@ def registrar_asistencia():
         return jsonify({'status': 'fail', 'message': f'❌ Error: {str(e)}'})
 
 
-# ---------------- REGISTROS CON FILTRO 7-8-2025----------------
+
+
+
 # ---------------- REGISTROS CON FILTRO POR DEPARTAMENTO Y FECHA ----------------
 @app.route('/registros')
 def mostrar_registros():
@@ -276,13 +278,12 @@ def mostrar_registros():
     fecha_fin = request.args.get('fecha_fin')
     id_tipo = request.args.get('id_tipo')  # departamento
 
-    # Convertimos a entero y validamos solo PINTURA y AIRES
-    try:
-        id_tipo = int(id_tipo)
-        if id_tipo not in [1, 3]:
+    # Convertimos a entero para evitar problemas
+    if id_tipo:
+        try:
+            id_tipo = int(id_tipo)
+        except ValueError:
             id_tipo = None
-    except (TypeError, ValueError):
-        id_tipo = None
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -293,19 +294,23 @@ def mostrar_registros():
         FROM asistencia a
         JOIN emp_activos e ON a.codigo_emp = e.codigo_emp
     """
+
+    condiciones = []
     params = []
 
-    filtros = []
+    # Filtro por fecha
     if fecha_inicio and fecha_fin:
-        filtros.append("a.fecha BETWEEN %s AND %s")
+        condiciones.append("a.fecha BETWEEN %s AND %s")
         params.extend([fecha_inicio, fecha_fin])
 
-    if id_tipo:
-        filtros.append("e.id_tipo = %s")
+    # Filtro por departamento (solo PINTURA o AIRES)
+    if id_tipo in [1, 3]:
+        condiciones.append("e.id_tipo = %s")
         params.append(id_tipo)
 
-    if filtros:
-        query += " WHERE " + " AND ".join(filtros)
+    # Unir condiciones si existen
+    if condiciones:
+        query += " WHERE " + " AND ".join(condiciones)
 
     query += " ORDER BY a.fecha DESC, a.hora_entrada ASC"
 

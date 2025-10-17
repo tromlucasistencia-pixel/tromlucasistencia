@@ -51,9 +51,10 @@
           <select id="tipo_usuario" name="tipo_usuario" required>
             <option value="" disabled selected>Selecciona un tipo</option>
             {% for id_tipo, tipo in tipos %}
-            <option value="{{ id_tipo }}">{{ tipo }}</option> <!-- Ahora envía el ID, no el nombre -->
+            <option value="{{ id_tipo }}">{{ tipo }}</option>
             {% endfor %}
           </select>
+
 
         </div>
 

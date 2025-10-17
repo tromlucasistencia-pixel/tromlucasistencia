@@ -269,20 +269,17 @@ def registrar_asistencia():
 
 
 
-
-#Registrar
 @app.route('/registros')
 def mostrar_registros():
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
     id_tipo = request.args.get('id_tipo')
 
-    # ✅ Convertir id_tipo a int si existe
-    if id_tipo:
-        try:
-            id_tipo = int(id_tipo)
-        except ValueError:
-            id_tipo = None
+    # Convertir id_tipo a entero
+    try:
+        id_tipo = int(id_tipo)
+    except (ValueError, TypeError):
+        id_tipo = None
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -297,17 +294,17 @@ def mostrar_registros():
     condiciones = []
     params = []
 
-    # Filtro obligatorio por departamento si es 1 o 3
+    # Filtrar siempre por departamento si es 1 o 3
     if id_tipo in [1, 3]:
         condiciones.append("e.id_tipo = %s")
         params.append(id_tipo)
 
-    # Filtro opcional por fechas
+    # Filtrar por fechas si se proporcionan
     if fecha_inicio and fecha_fin:
         condiciones.append("a.fecha BETWEEN %s AND %s")
         params.extend([fecha_inicio, fecha_fin])
 
-    # Aplicar condiciones
+    # Aplicar condiciones combinadas con AND
     if condiciones:
         query += " WHERE " + " AND ".join(condiciones)
 

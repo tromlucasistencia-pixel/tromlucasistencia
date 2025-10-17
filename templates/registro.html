@@ -22,7 +22,10 @@
       </div>
       <div class="nav-right">
         <a href="{{ url_for('mostrar_registros') }}">
-          <button type="button">Tabla Registros</button>
+          <button type="button">Tabla Registros PINTURA</button>
+        </a>
+        <a href="{{ url_for('mostrar_registros') }}">
+          <button type="button">Tabla Registros AIRES</button>
         </a>
         <button onclick="window.location.href='/logout';">Cerrar sesión</button>
 
@@ -47,7 +50,7 @@
           <select id="tipo_usuario" name="tipo_usuario" required>
             <option value="" disabled selected>Selecciona un tipo</option>
             {% for id_tipo, tipo in tipos %}
-              <option value="{{ id_tipo }}">{{ tipo }}</option>
+              <option value="{{ tipo}}">{{ tipo }}</option>
             {% endfor %}
           </select>
         </div>

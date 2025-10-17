@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tabla de Registros PINTURA</title>
+  <title>Tabla de Registros AIRES </title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='style_registros.css') }}"/>
@@ -18,6 +18,9 @@
       <div class="nav-right">
         <a href="{{ url_for('regresar_registros') }}">
           <button type="button">Regresar</button>
+        </a>
+        <a href="{{ url_for('regresar_registros') }}">
+          <button type="button">Aires</button>
         </a>
         <button type="button" onclick="descargarExcel()">Descargar Excel</button>
 

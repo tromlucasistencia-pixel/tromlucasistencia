@@ -320,8 +320,9 @@ def regresar_registros():
 @app.route('/descargar_excel')
 def descargar_excel():
     try:
-        fecha_inicio = request.args.get('fecha_inicio')  # Nuevo
-        fecha_fin = request.args.get('fecha_fin')        # Nuevo
+        fecha_inicio = request.args.get('fecha_inicio')
+        fecha_fin = request.args.get('fecha_fin')
+        id_tipo = request.args.get('id_tipo')  # 👈 Nuevo: tomamos id_tipo
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -339,12 +340,22 @@ def descargar_excel():
             FROM emp_activos e
             JOIN asistencia a ON e.codigo_emp = a.codigo_emp
         '''
-        params = ()
 
-        # Agregar filtro si hay fechas
+        condiciones = []
+        params = []
+
         if fecha_inicio and fecha_fin:
-            query += " WHERE a.fecha BETWEEN %s AND %s"
-            params = (fecha_inicio, fecha_fin)
+            condiciones.append("a.fecha BETWEEN %s AND %s")
+            params.extend([fecha_inicio, fecha_fin])
+
+        if id_tipo in ['1','3']:
+            condiciones.append("e.id_tipo = %s")
+            params.append(id_tipo)
+
+        if condiciones:
+            query += " WHERE " + " AND ".join(condiciones)
+
+        query += " ORDER BY a.fecha DESC, a.hora_entrada ASC"
 
         cursor.execute(query, params)
         registros = cursor.fetchall()

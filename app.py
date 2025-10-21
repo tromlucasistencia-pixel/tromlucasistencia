@@ -267,7 +267,7 @@ def registrar_asistencia():
     except Exception as e:
         return jsonify({'status': 'fail', 'message': f'❌ Error: {str(e)}'})
 
-
+#MOSTRAR REGISTROS
 @app.route('/registros')
 def mostrar_registros():
     fecha_inicio = request.args.get('fecha_inicio')
@@ -277,9 +277,11 @@ def mostrar_registros():
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Query actualizado para traer fotos de entrada y salida
     query = """
         SELECT e.codigo_emp, e.nombre, e.apellido_pa, e.apellido_ma, 
-               a.ubicacion, a.vector, a.fecha, a.hora_entrada, a.hora_salida
+               a.ubicacion, a.foto_entrada, a.foto_salida, 
+               a.fecha, a.hora_entrada, a.hora_salida
         FROM asistencia a
         JOIN emp_activos e ON a.codigo_emp = e.codigo_emp
     """
@@ -291,7 +293,7 @@ def mostrar_registros():
         condiciones.append("a.fecha BETWEEN %s AND %s")
         params.extend([fecha_inicio, fecha_fin])
 
-    if id_tipo in ['1', '3']:  # 👈 Aquí lo tratamos como string
+    if id_tipo in ['1', '3']:  # Filtra por tipo de usuario si aplica
         condiciones.append("e.id_tipo = %s")
         params.append(id_tipo)
 

@@ -242,7 +242,10 @@ def registrar_asistencia():
             carpeta = "fotos/salida"
             ruta = os.path.join(carpeta, nombre_archivo)
             cv2.imwrite(ruta, img)
-            cursor.execute("UPDATE asistencia SET hora_salida = %s WHERE id_asistencia = %s", (hora_actual,registro[0]))
+            cursor.execute(
+                "UPDATE asistencia SET hora_salida = %s, foto_salida = %s WHERE id_asistencia = %s",
+                (hora_actual, foto_base64, registro[0])
+            )
             conn.commit()
             cursor.close()
             conn.close()
@@ -253,12 +256,10 @@ def registrar_asistencia():
             carpeta = "fotos/entrada"
             ruta = os.path.join(carpeta, nombre_archivo)
             cv2.imwrite(ruta, img)
-
             cursor.execute("""
-                INSERT INTO asistencia (codigo_emp, vector, fecha, hora_entrada, latitud, longitud, ubicacion)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (codigo_emp, json.dumps(vector_nuevo.tolist()), hoy, hora_actual, latitud, longitud, ubicacion))
-
+                INSERT INTO asistencia (codigo_emp, vector, fecha, hora_entrada, latitud, longitud, ubicacion, foto_entrada)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (codigo_emp, json.dumps(vector_nuevo.tolist()), hoy, hora_actual, latitud, longitud, ubicacion, foto_base64))
             conn.commit()
             cursor.close()
             conn.close()
@@ -266,6 +267,9 @@ def registrar_asistencia():
 
     except Exception as e:
         return jsonify({'status': 'fail', 'message': f'❌ Error: {str(e)}'})
+
+
+        
 
 #MOSTRAR REGISTROS
 @app.route('/registros')

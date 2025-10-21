@@ -81,34 +81,34 @@
       </thead>
       <tbody>
         {% for r in registros %}
-  <tr>
-    <td>{{ r[0] }}</td>
-    <td>{{ r[1] }} {{ r[2] }} {{ r[3] }}</td>
-    <td>{{ r[4] }}</td>
+        <tr>
+          <td>{{ r[0] }}</td>
+          <td>{{ r[1] }} {{ r[2] }} {{ r[3] }}</td>
+          <td>{{ r[4] }}</td>
 
-    <!-- Foto Entrada -->
-    <td>
-      {% if r[5] %}
-        <img src="data:image/jpeg;base64,{{ r[5] }}" width="80"/>
-      {% else %}
-        <span class="no-image">Sin foto</span>
-      {% endif %}
-    </td>
+          <!-- Foto Entrada -->
+          <td>
+            {% if r[5] %}
+              <img src="data:image/jpeg;base64,{{ r[5]|safe }}" width="80" alt="Foto Entrada"/>
+            {% else %}
+              <span class="no-image">Sin foto</span>
+            {% endif %}
+          </td>
 
-    <!-- Foto Salida -->
-    <td>
-      {% if r[6] %}
-        <img src="data:image/jpeg;base64,{{ r[6] }}" width="80"/>
-      {% else %}
-        <span class="no-image">Sin foto</span>
-      {% endif %}
-    </td>
+          <!-- Foto Salida -->
+          <td>
+            {% if r[6] %}
+              <img src="data:image/jpeg;base64,{{ r[6]|safe }}" width="80" alt="Foto Salida"/>
+            {% else %}
+              <span class="no-image">Sin foto</span>
+            {% endif %}
+          </td>
 
-    <td>{{ r[7] }}</td>
-    <td>{{ r[8] }}</td>
-    <td>{{ r[9] if r[9] else '-' }}</td>
-  </tr>
-  {% endfor %}
+          <td>{{ r[7] }}</td>
+          <td>{{ r[8] }}</td>
+          <td>{{ r[9] if r[9] else '-' }}</td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>

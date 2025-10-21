@@ -25,7 +25,7 @@
         function descargarExcel() {
             const inicio = document.getElementById('fecha_inicio').value;
             const fin = document.getElementById('fecha_fin').value;
-            const id_tipo = new URLSearchParams(window.location.search).get('id_tipo'); // ✅ Mantener id_tipo
+            const id_tipo = new URLSearchParams(window.location.search).get('id_tipo');
 
             let url = '/descargar_excel';
             const params = [];
@@ -53,8 +53,6 @@
 
   <!-- FILTRO POR RANGO DE FECHAS -->
   <form method="get" action="{{ url_for('mostrar_registros') }}" style="text-align:center; margin-bottom: 20px;">
-
-    <!-- 👇 ESTA LÍNEA NUEVA mantiene el id_tipo -->
     <input type="hidden" name="id_tipo" value="{{ request.args.get('id_tipo', '') }}">
 
     <label for="fecha_inicio">Desde:</label>
@@ -74,11 +72,11 @@
           <th>Código Empleado</th>
           <th>Nombre Completo</th>
           <th>Ubicación</th>
+          <th>Foto Entrada</th>
+          <th>Foto Salida</th>
           <th>Fecha</th>
           <th>Hora Entrada</th>
           <th>Hora Salida</th>
-           <th>Foto Entrada</th>
-          <th>Foto Salida</th>
         </tr>
       </thead>
       <tbody>
@@ -89,14 +87,21 @@
           <td>{{ r[4] }}</td>
           <td>
             {% if r[5] %}
-              <span class="no-image">Foto Guardada</span>
+              <img src="data:image/jpeg;base64,{{ r[5] }}" alt="Entrada" style="width:100px; height:auto;">
             {% else %}
               <span class="no-image">Sin foto</span>
             {% endif %}
           </td>
-          <td>{{ r[6] }}</td>
+          <td>
+            {% if r[6] %}
+              <img src="data:image/jpeg;base64,{{ r[6] }}" alt="Salida" style="width:100px; height:auto;">
+            {% else %}
+              <span class="no-image">Sin foto</span>
+            {% endif %}
+          </td>
           <td>{{ r[7] }}</td>
-          <td>{{ r[8] if r[8] else '-' }}</td>
+          <td>{{ r[8] }}</td>
+          <td>{{ r[9] if r[9] else '-' }}</td>
         </tr>
         {% endfor %}
       </tbody>

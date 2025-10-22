@@ -356,7 +356,7 @@ def descargar_excel():
             condiciones.append("a.fecha BETWEEN %s AND %s")
             params.extend([fecha_inicio, fecha_fin])
 
-        if id_tipo in ['1', '3']:
+        if id_tipo in ['1','3']:
             condiciones.append("e.id_tipo = %s")
             params.append(id_tipo)
 
@@ -371,76 +371,81 @@ def descargar_excel():
         cursor.close()
         conn.close()
 
-        # ✅ Convertir hora_entrada y hora_salida a HH:MM:SS si son timedelta
-        def convertir_hora(valor):
-            if not valor:
-                return ''
-            if isinstance(valor, str):
-                return valor
-            try:
-                total_segundos = int(valor.total_seconds())
-                horas = total_segundos // 3600
-                minutos = (total_segundos % 3600) // 60
-                segundos = total_segundos % 60
-                return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
-            except Exception:
-                return str(valor)
-
-        registros_limpios = []
-        for r in registros:
-            r = list(r)
-            r[6] = convertir_hora(r[6])
-            r[7] = convertir_hora(r[7])
-            registros_limpios.append(r)
-
-        # Columnas del Excel
+        # Crear DataFrame
         columnas = [
-            'Código Empleado', 'Nombre', 'Apellido Paterno', 'Apellido Materno',
-            'Ubicación', 'Fecha', 'Hora Entrada', 'Hora Salida',
-            'Foto Entrada', 'Foto Salida'
+            'Código Empleado',
+            'Nombre',
+            'Apellido Paterno',
+            'Apellido Materno',
+            'Ubicación',
+            'Fecha',
+            'Hora Entrada',
+            'Hora Salida',
+            'Foto Entrada',
+            'Foto Salida'
         ]
+        df = pd.DataFrame(registros, columns=columnas)
 
-        df = pd.DataFrame(registros_limpios, columns=columnas)
+        # Formatear horas
+        def format_time(valor):
+            if pd.isnull(valor):
+                return ''
+            if isinstance(valor, (datetime, time)):
+                return valor.strftime('%H:%M:%S')
+            return str(valor)
 
-        # ✅ Crear Excel sin duplicar encabezados
+        df['Hora Entrada'] = df['Hora Entrada'].apply(format_time)
+        df['Hora Salida'] = df['Hora Salida'].apply(format_time)
+
+        # Generar Excel en memoria
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             df.to_excel(writer, index=False, sheet_name='Asistencia')
             workbook = writer.book
             worksheet = writer.sheets['Asistencia']
 
-            # ✅ Formatos
-            formato_titulo = workbook.add_format({
-                'bold': True, 'align': 'center', 'valign': 'vcenter', 'bg_color': '#DCE6F1'
-            })
-            formato_celda = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
-            formato_imagen = {'x_scale': 0.35, 'y_scale': 0.35}
+            formato_titulo = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter'})
+            formato_celda = workbook.add_format({'align': 'center', 'valign': 'vcenter', 'text_wrap': True})
 
-            # Ajustar anchos de columna
+            # Ajustar ancho de columnas
             worksheet.set_column('A:H', 18, formato_celda)
             worksheet.set_column('I:J', 20)  # columnas de imágenes
 
-            # Aplicar formato a la fila de encabezados
+            # Fila de encabezado
             worksheet.set_row(0, 25, formato_titulo)
 
-            # ✅ Insertar imágenes correctamente alineadas
+            # Insertar imágenes alineadas
             for idx, row in enumerate(df.itertuples(index=False), start=1):
-                fila_excel = idx  # ya no hay desplazamiento
-                if row[8]:  # Foto Entrada
+                fila_excel = idx  # fila actual
+                altura_fila = 100  # altura de fila para las imágenes
+                worksheet.set_row(fila_excel, altura_fila)  # ajustar altura de fila
+
+                # Foto Entrada
+                if row[8]:
                     try:
                         img_data = base64.b64decode(row[8])
                         img_stream = BytesIO(img_data)
-                        worksheet.insert_image(f'I{fila_excel + 1}', 'foto_entrada.png', {
-                            'image_data': img_stream, **formato_imagen
+                        worksheet.insert_image(f'I{fila_excel+1}', 'foto_entrada.png', {
+                            'image_data': img_stream,
+                            'x_scale': 0.5,
+                            'y_scale': 0.5,
+                            'x_offset': 5,
+                            'y_offset': 5
                         })
                     except Exception:
                         pass
-                if row[9]:  # Foto Salida
+
+                # Foto Salida
+                if row[9]:
                     try:
                         img_data = base64.b64decode(row[9])
                         img_stream = BytesIO(img_data)
-                        worksheet.insert_image(f'J{fila_excel + 1}', 'foto_salida.png', {
-                            'image_data': img_stream, **formato_imagen
+                        worksheet.insert_image(f'J{fila_excel+1}', 'foto_salida.png', {
+                            'image_data': img_stream,
+                            'x_scale': 0.5,
+                            'y_scale': 0.5,
+                            'x_offset': 5,
+                            'y_offset': 5
                         })
                     except Exception:
                         pass

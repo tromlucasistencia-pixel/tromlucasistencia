@@ -12,6 +12,8 @@ from datetime import datetime, date
 from pathlib import Path
 import pandas as pd
 from io import BytesIO
+from datetime import datetime, date, time
+
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_segura'

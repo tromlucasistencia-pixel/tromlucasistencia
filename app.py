@@ -333,7 +333,6 @@ def descargar_excel():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # ✅ Incluye fotos de entrada y salida
         query = '''
             SELECT 
                 e.codigo_emp, 
@@ -368,70 +367,68 @@ def descargar_excel():
 
         cursor.execute(query, params)
         registros = cursor.fetchall()
+
         cursor.close()
         conn.close()
 
-        # Crear Excel con pandas + xlsxwriter
-        output = BytesIO()
+        # ✅ Convertir las horas a texto legible y mantener fotos
+        registros_limpios = []
+        for r in registros:
+            r = list(r)
+            # hora_entrada -> índice 6, hora_salida -> índice 7
+            r[6] = r[6].strftime('%H:%M:%S') if r[6] else ''
+            r[7] = r[7].strftime('%H:%M:%S') if r[7] else ''
+            registros_limpios.append(r)
+
+        # Columnas del Excel
         columnas = [
             'Código Empleado', 'Nombre', 'Apellido Paterno', 'Apellido Materno',
             'Ubicación', 'Fecha', 'Hora Entrada', 'Hora Salida',
             'Foto Entrada', 'Foto Salida'
         ]
-        df = pd.DataFrame(registros, columns=columnas)
 
+        # Crear DataFrame
+        df = pd.DataFrame(registros_limpios, columns=columnas)
+
+        # Generar Excel en memoria
+        output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Asistencia', startrow=1)
+
             workbook = writer.book
-            df.to_excel(writer, index=False, sheet_name='Asistencia')
             worksheet = writer.sheets['Asistencia']
 
-            # Ajustes de estilo
-            header_format = workbook.add_format({
-                'bold': True,
-                'align': 'center',
-                'valign': 'vcenter',
-                'bg_color': '#E0E0E0',
-                'border': 1
-            })
-            for col_num, col_name in enumerate(df.columns):
-                worksheet.write(0, col_num, col_name, header_format)
+            # Formatos
+            formato_titulo = workbook.add_format({'bold': True, 'align': 'center'})
+            formato_hora = workbook.add_format({'num_format': 'hh:mm:ss', 'align': 'center'})
+            formato_imagen = {'x_scale': 0.4, 'y_scale': 0.4}
 
-            worksheet.set_column('A:H', 20)
-            worksheet.set_column('I:J', 18)  # columnas de las fotos un poco más anchas
+            # Centrar títulos
+            for col_num, value in enumerate(df.columns.values):
+                worksheet.write(0, col_num, value, formato_titulo)
+                worksheet.set_column(col_num, col_num, 18)
 
-            # Insertar imágenes alineadas con su fila
-            for i, row in enumerate(registros, start=1):  # fila 1 = encabezados
-                foto_entrada = row[8]
-                foto_salida = row[9]
-
-                # Ajustar altura de fila para que se vea bien la imagen
-                worksheet.set_row(i, 100)
-
-                # Foto Entrada
-                if foto_entrada:
-                    img_bytes = base64.b64decode(foto_entrada)
-                    entrada_temp = f"/tmp/foto_entrada_{i}.jpg"
-                    with open(entrada_temp, "wb") as f:
-                        f.write(img_bytes)
-                    worksheet.insert_image(f"I{i+1}", entrada_temp, {
-                        'x_scale': 0.45,   # escala ajustada
-                        'y_scale': 0.45,
-                        'x_offset': 15,    # centrado horizontal
-                        'y_offset': 10     # centrado vertical
-                    })
-
-                # Foto Salida
-                if foto_salida:
-                    img_bytes = base64.b64decode(foto_salida)
-                    salida_temp = f"/tmp/foto_salida_{i}.jpg"
-                    with open(salida_temp, "wb") as f:
-                        f.write(img_bytes)
-                    worksheet.insert_image(f"J{i+1}", salida_temp, {
-                        'x_scale': 0.45,
-                        'y_scale': 0.45,
-                        'x_offset': 15,
-                        'y_offset': 10
-                    })
+            # Insertar fotos (columnas 8 y 9)
+            for idx, row in enumerate(df.itertuples(index=False), start=1):
+                fila_excel = idx + 1  # desplazamiento por encabezado
+                if row[8]:  # foto_entrada
+                    try:
+                        img_data = base64.b64decode(row[8])
+                        img_stream = BytesIO(img_data)
+                        worksheet.insert_image(f'A{fila_excel}', 'foto_entrada.png', {
+                            'image_data': img_stream, **formato_imagen
+                        })
+                    except Exception:
+                        pass
+                if row[9]:  # foto_salida
+                    try:
+                        img_data = base64.b64decode(row[9])
+                        img_stream = BytesIO(img_data)
+                        worksheet.insert_image(f'B{fila_excel}', 'foto_salida.png', {
+                            'image_data': img_stream, **formato_imagen
+                        })
+                    except Exception:
+                        pass
 
         output.seek(0)
 

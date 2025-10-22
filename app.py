@@ -378,7 +378,6 @@ def descargar_excel():
             if isinstance(valor, str):
                 return valor
             try:
-                # Si es timedelta
                 total_segundos = int(valor.total_seconds())
                 horas = total_segundos // 3600
                 minutos = (total_segundos % 3600) // 60
@@ -394,40 +393,44 @@ def descargar_excel():
             r[7] = convertir_hora(r[7])
             registros_limpios.append(r)
 
-        # Columnas
+        # Columnas del Excel
         columnas = [
             'Código Empleado', 'Nombre', 'Apellido Paterno', 'Apellido Materno',
             'Ubicación', 'Fecha', 'Hora Entrada', 'Hora Salida',
             'Foto Entrada', 'Foto Salida'
         ]
 
-        # Crear DataFrame
         df = pd.DataFrame(registros_limpios, columns=columnas)
 
-        # Generar Excel en memoria
+        # ✅ Crear Excel sin duplicar encabezados
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Asistencia', startrow=1)
-
+            df.to_excel(writer, index=False, sheet_name='Asistencia')
             workbook = writer.book
             worksheet = writer.sheets['Asistencia']
 
-            formato_titulo = workbook.add_format({'bold': True, 'align': 'center'})
-            formato_imagen = {'x_scale': 0.4, 'y_scale': 0.4}
+            # ✅ Formatos
+            formato_titulo = workbook.add_format({
+                'bold': True, 'align': 'center', 'valign': 'vcenter', 'bg_color': '#DCE6F1'
+            })
+            formato_celda = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
+            formato_imagen = {'x_scale': 0.35, 'y_scale': 0.35}
 
-            # Centrar encabezados
-            for col_num, value in enumerate(df.columns.values):
-                worksheet.write(0, col_num, value, formato_titulo)
-                worksheet.set_column(col_num, col_num, 18)
+            # Ajustar anchos de columna
+            worksheet.set_column('A:H', 18, formato_celda)
+            worksheet.set_column('I:J', 20)  # columnas de imágenes
 
-            # Insertar imágenes (columnas 8 y 9)
+            # Aplicar formato a la fila de encabezados
+            worksheet.set_row(0, 25, formato_titulo)
+
+            # ✅ Insertar imágenes correctamente alineadas
             for idx, row in enumerate(df.itertuples(index=False), start=1):
-                fila_excel = idx + 1
+                fila_excel = idx  # ya no hay desplazamiento
                 if row[8]:  # Foto Entrada
                     try:
                         img_data = base64.b64decode(row[8])
                         img_stream = BytesIO(img_data)
-                        worksheet.insert_image(f'I{fila_excel}', 'foto_entrada.png', {
+                        worksheet.insert_image(f'I{fila_excel + 1}', 'foto_entrada.png', {
                             'image_data': img_stream, **formato_imagen
                         })
                     except Exception:
@@ -436,7 +439,7 @@ def descargar_excel():
                     try:
                         img_data = base64.b64decode(row[9])
                         img_stream = BytesIO(img_data)
-                        worksheet.insert_image(f'J{fila_excel}', 'foto_salida.png', {
+                        worksheet.insert_image(f'J{fila_excel + 1}', 'foto_salida.png', {
                             'image_data': img_stream, **formato_imagen
                         })
                     except Exception:

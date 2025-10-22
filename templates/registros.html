@@ -7,6 +7,47 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='style_registros.css') }}"/>
+
+  <style>
+    /* Modal de imagen */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      padding-top: 60px; 
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.8);
+    }
+
+    .modal-content {
+      margin: auto;
+      display: block;
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #fff;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #bbb;
+    }
+
+    .clickable-img {
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <!-- HEADER -->
@@ -89,7 +130,7 @@
           <!-- Foto Entrada -->
           <td>
             {% if r[5] %}
-              <img src="data:image/jpeg;base64,{{ r[5]|safe }}" width="80" alt="Foto Entrada"/>
+              <img src="data:image/jpeg;base64,{{ r[5] }}" width="80" class="clickable-img"/>
             {% else %}
               <span class="no-image">Sin foto</span>
             {% endif %}
@@ -98,7 +139,7 @@
           <!-- Foto Salida -->
           <td>
             {% if r[6] %}
-              <img src="data:image/jpeg;base64,{{ r[6]|safe }}" width="80" alt="Foto Salida"/>
+              <img src="data:image/jpeg;base64,{{ r[6] }}" width="80" class="clickable-img"/>
             {% else %}
               <span class="no-image">Sin foto</span>
             {% endif %}
@@ -112,5 +153,34 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Modal para ver la imagen grande -->
+  <div id="modalImg" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="imgGrande">
+  </div>
+
+  <script>
+    const modal = document.getElementById("modalImg");
+    const modalImg = document.getElementById("imgGrande");
+    const closeBtn = document.getElementsByClassName("close")[0];
+
+    document.querySelectorAll(".clickable-img").forEach(img => {
+      img.onclick = () => {
+        modal.style.display = "block";
+        modalImg.src = img.src;
+      };
+    });
+
+    closeBtn.onclick = () => {
+      modal.style.display = "none";
+    };
+
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+  </script>
 </body>
 </html>

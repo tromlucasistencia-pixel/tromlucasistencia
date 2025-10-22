@@ -333,7 +333,7 @@ def descargar_excel():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # ✅ Incluimos fotos de entrada y salida en la consulta
+        # ✅ Incluye fotos de entrada y salida
         query = '''
             SELECT 
                 e.codigo_emp, 
@@ -371,7 +371,8 @@ def descargar_excel():
         cursor.close()
         conn.close()
 
-        # Crear DataFrame sin imágenes (solo texto)
+        # Crear Excel con pandas + xlsxwriter
+        output = BytesIO()
         columnas = [
             'Código Empleado', 'Nombre', 'Apellido Paterno', 'Apellido Materno',
             'Ubicación', 'Fecha', 'Hora Entrada', 'Hora Salida',
@@ -379,20 +380,32 @@ def descargar_excel():
         ]
         df = pd.DataFrame(registros, columns=columnas)
 
-        # Generar Excel con imágenes
-        output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.drop(['Foto Entrada', 'Foto Salida'], axis=1).to_excel(writer, index=False, sheet_name='Asistencia')
             workbook = writer.book
+            df.to_excel(writer, index=False, sheet_name='Asistencia')
             worksheet = writer.sheets['Asistencia']
 
-            # Ajustar anchos de columna
-            worksheet.set_column('A:J', 20)
+            # Ajustes de estilo
+            header_format = workbook.add_format({
+                'bold': True,
+                'align': 'center',
+                'valign': 'vcenter',
+                'bg_color': '#E0E0E0',
+                'border': 1
+            })
+            for col_num, col_name in enumerate(df.columns):
+                worksheet.write(0, col_num, col_name, header_format)
 
-            # Insertar imágenes decodificadas (base64)
-            for i, row in enumerate(registros, start=2):  # empieza en fila 2 (fila 1 = encabezados)
+            worksheet.set_column('A:H', 20)
+            worksheet.set_column('I:J', 18)  # columnas de las fotos un poco más anchas
+
+            # Insertar imágenes alineadas con su fila
+            for i, row in enumerate(registros, start=1):  # fila 1 = encabezados
                 foto_entrada = row[8]
                 foto_salida = row[9]
+
+                # Ajustar altura de fila para que se vea bien la imagen
+                worksheet.set_row(i, 100)
 
                 # Foto Entrada
                 if foto_entrada:
@@ -400,7 +413,12 @@ def descargar_excel():
                     entrada_temp = f"/tmp/foto_entrada_{i}.jpg"
                     with open(entrada_temp, "wb") as f:
                         f.write(img_bytes)
-                    worksheet.insert_image(f"I{i}", entrada_temp, {'x_scale': 0.3, 'y_scale': 0.3})
+                    worksheet.insert_image(f"I{i+1}", entrada_temp, {
+                        'x_scale': 0.45,   # escala ajustada
+                        'y_scale': 0.45,
+                        'x_offset': 15,    # centrado horizontal
+                        'y_offset': 10     # centrado vertical
+                    })
 
                 # Foto Salida
                 if foto_salida:
@@ -408,7 +426,12 @@ def descargar_excel():
                     salida_temp = f"/tmp/foto_salida_{i}.jpg"
                     with open(salida_temp, "wb") as f:
                         f.write(img_bytes)
-                    worksheet.insert_image(f"J{i}", salida_temp, {'x_scale': 0.3, 'y_scale': 0.3})
+                    worksheet.insert_image(f"J{i+1}", salida_temp, {
+                        'x_scale': 0.45,
+                        'y_scale': 0.45,
+                        'x_offset': 15,
+                        'y_offset': 10
+                    })
 
         output.seek(0)
 
@@ -421,6 +444,7 @@ def descargar_excel():
 
     except Exception as e:
         return f"❌ Error al generar Excel: {str(e)}"
+
 
 
 

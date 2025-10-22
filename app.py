@@ -371,16 +371,30 @@ def descargar_excel():
         cursor.close()
         conn.close()
 
-        # ✅ Convertir las horas a texto legible y mantener fotos
+        # ✅ Convertir hora_entrada y hora_salida a HH:MM:SS si son timedelta
+        def convertir_hora(valor):
+            if not valor:
+                return ''
+            if isinstance(valor, str):
+                return valor
+            try:
+                # Si es timedelta
+                total_segundos = int(valor.total_seconds())
+                horas = total_segundos // 3600
+                minutos = (total_segundos % 3600) // 60
+                segundos = total_segundos % 60
+                return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+            except Exception:
+                return str(valor)
+
         registros_limpios = []
         for r in registros:
             r = list(r)
-            # hora_entrada -> índice 6, hora_salida -> índice 7
-            r[6] = r[6].strftime('%H:%M:%S') if r[6] else ''
-            r[7] = r[7].strftime('%H:%M:%S') if r[7] else ''
+            r[6] = convertir_hora(r[6])
+            r[7] = convertir_hora(r[7])
             registros_limpios.append(r)
 
-        # Columnas del Excel
+        # Columnas
         columnas = [
             'Código Empleado', 'Nombre', 'Apellido Paterno', 'Apellido Materno',
             'Ubicación', 'Fecha', 'Hora Entrada', 'Hora Salida',
@@ -398,33 +412,31 @@ def descargar_excel():
             workbook = writer.book
             worksheet = writer.sheets['Asistencia']
 
-            # Formatos
             formato_titulo = workbook.add_format({'bold': True, 'align': 'center'})
-            formato_hora = workbook.add_format({'num_format': 'hh:mm:ss', 'align': 'center'})
             formato_imagen = {'x_scale': 0.4, 'y_scale': 0.4}
 
-            # Centrar títulos
+            # Centrar encabezados
             for col_num, value in enumerate(df.columns.values):
                 worksheet.write(0, col_num, value, formato_titulo)
                 worksheet.set_column(col_num, col_num, 18)
 
-            # Insertar fotos (columnas 8 y 9)
+            # Insertar imágenes (columnas 8 y 9)
             for idx, row in enumerate(df.itertuples(index=False), start=1):
-                fila_excel = idx + 1  # desplazamiento por encabezado
-                if row[8]:  # foto_entrada
+                fila_excel = idx + 1
+                if row[8]:  # Foto Entrada
                     try:
                         img_data = base64.b64decode(row[8])
                         img_stream = BytesIO(img_data)
-                        worksheet.insert_image(f'A{fila_excel}', 'foto_entrada.png', {
+                        worksheet.insert_image(f'I{fila_excel}', 'foto_entrada.png', {
                             'image_data': img_stream, **formato_imagen
                         })
                     except Exception:
                         pass
-                if row[9]:  # foto_salida
+                if row[9]:  # Foto Salida
                     try:
                         img_data = base64.b64decode(row[9])
                         img_stream = BytesIO(img_data)
-                        worksheet.insert_image(f'B{fila_excel}', 'foto_salida.png', {
+                        worksheet.insert_image(f'J{fila_excel}', 'foto_salida.png', {
                             'image_data': img_stream, **formato_imagen
                         })
                     except Exception:
@@ -441,6 +453,7 @@ def descargar_excel():
 
     except Exception as e:
         return f"❌ Error al generar Excel: {str(e)}"
+
 
 
 

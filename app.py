@@ -328,11 +328,12 @@ def descargar_excel():
     try:
         fecha_inicio = request.args.get('fecha_inicio')
         fecha_fin = request.args.get('fecha_fin')
-        id_tipo = request.args.get('id_tipo')  # 👈 Nuevo: tomamos id_tipo
+        id_tipo = request.args.get('id_tipo')
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        # ✅ Incluimos fotos de entrada y salida en la consulta
         query = '''
             SELECT 
                 e.codigo_emp, 
@@ -342,7 +343,9 @@ def descargar_excel():
                 a.ubicacion, 
                 a.fecha, 
                 a.hora_entrada, 
-                a.hora_salida
+                a.hora_salida,
+                a.foto_entrada,
+                a.foto_salida
             FROM emp_activos e
             JOIN asistencia a ON e.codigo_emp = a.codigo_emp
         '''
@@ -354,7 +357,7 @@ def descargar_excel():
             condiciones.append("a.fecha BETWEEN %s AND %s")
             params.extend([fecha_inicio, fecha_fin])
 
-        if id_tipo in ['1','3']:
+        if id_tipo in ['1', '3']:
             condiciones.append("e.id_tipo = %s")
             params.append(id_tipo)
 
@@ -365,41 +368,48 @@ def descargar_excel():
 
         cursor.execute(query, params)
         registros = cursor.fetchall()
-
         cursor.close()
         conn.close()
 
-        # Crear DataFrame
+        # Crear DataFrame sin imágenes (solo texto)
         columnas = [
-            'Código Empleado',
-            'Nombre',
-            'Apellido Paterno',
-            'Apellido Materno',
-            'Ubicación',
-            'Fecha',
-            'Hora Entrada',
-            'Hora Salida'
+            'Código Empleado', 'Nombre', 'Apellido Paterno', 'Apellido Materno',
+            'Ubicación', 'Fecha', 'Hora Entrada', 'Hora Salida',
+            'Foto Entrada', 'Foto Salida'
         ]
         df = pd.DataFrame(registros, columns=columnas)
 
-        def format_timedelta(td):
-            if pd.isnull(td):
-                return ''
-            if isinstance(td, str):
-                return td
-            total_seconds = int(td.total_seconds())
-            horas = total_seconds // 3600
-            minutos = (total_seconds % 3600) // 60
-            segundos = total_seconds % 60
-            return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
-
-        df['Hora Entrada'] = df['Hora Entrada'].apply(format_timedelta)
-        df['Hora Salida'] = df['Hora Salida'].apply(format_timedelta)
-
-        # Generar Excel en memoria
+        # Generar Excel con imágenes
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Asistencia')
+            df.drop(['Foto Entrada', 'Foto Salida'], axis=1).to_excel(writer, index=False, sheet_name='Asistencia')
+            workbook = writer.book
+            worksheet = writer.sheets['Asistencia']
+
+            # Ajustar anchos de columna
+            worksheet.set_column('A:J', 20)
+
+            # Insertar imágenes decodificadas (base64)
+            for i, row in enumerate(registros, start=2):  # empieza en fila 2 (fila 1 = encabezados)
+                foto_entrada = row[8]
+                foto_salida = row[9]
+
+                # Foto Entrada
+                if foto_entrada:
+                    img_bytes = base64.b64decode(foto_entrada)
+                    entrada_temp = f"/tmp/foto_entrada_{i}.jpg"
+                    with open(entrada_temp, "wb") as f:
+                        f.write(img_bytes)
+                    worksheet.insert_image(f"I{i}", entrada_temp, {'x_scale': 0.3, 'y_scale': 0.3})
+
+                # Foto Salida
+                if foto_salida:
+                    img_bytes = base64.b64decode(foto_salida)
+                    salida_temp = f"/tmp/foto_salida_{i}.jpg"
+                    with open(salida_temp, "wb") as f:
+                        f.write(img_bytes)
+                    worksheet.insert_image(f"J{i}", salida_temp, {'x_scale': 0.3, 'y_scale': 0.3})
+
         output.seek(0)
 
         return send_file(

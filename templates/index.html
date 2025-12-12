@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style3.css') }}">
+   
+
 </head>
 
 <body>
@@ -45,5 +47,30 @@
         </div>
     </div>
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const numFlakes = 60;
 
+        for (let i = 0; i < numFlakes; i++) {
+            let flake = document.createElement("div");
+            flake.classList.add("snowflake");
+
+            flake.innerHTML = "❄️";
+
+            // Posición inicial aleatoria
+            flake.style.left = Math.random() * 100 + "vw";
+
+            // Tamaño aleatorio
+            flake.style.fontSize = (Math.random() * 10 + 10) + "px";
+
+            // Opacidad
+            flake.style.opacity = Math.random() + 0.3;
+
+            // Duración distinta para cada copo
+            flake.style.animationDuration = (5 + Math.random() * 10) + "s";
+
+            document.body.appendChild(flake);
+        }
+    });
+</script>
 </html>

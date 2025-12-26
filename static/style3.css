@@ -157,7 +157,7 @@ button:hover {
   background-color: #C00000; /* color más oscuro cuando pasas el mouse */
 }
 
-.snowflake {
+/* .snowflake {
         position: fixed;
         top: -10px;
         color: white;
@@ -173,7 +173,7 @@ button:hover {
         0% { transform: translateY(0); }
         100% { transform: translateY(100vh); }
     }
-
+ */
 
 
 /*EMPEZAMOS A DARLE FORMATO EN TABLET Y CEL */

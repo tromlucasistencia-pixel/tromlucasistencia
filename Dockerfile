@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-# Instalar dependencias del sistema necesarias para dlib, face-recognition, opencv, etc.
+# ------------------ Dependencias del sistema ------------------
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -18,19 +18,18 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear un entorno virtual y activarlo
+# ------------------ Crear entorno virtual ------------------
 RUN python -m venv /opt/venv
-
-# Activar el entorno virtual e instalar dependencias
-COPY requirements.txt /app/
-RUN /opt/venv/bin/pip install --upgrade pip setuptools && /opt/venv/bin/pip install -r /app/requirements.txt
-
-# Copiar el código fuente
-COPY . /app/
-WORKDIR /app
-
-# Usar el entorno virtual como PATH principal
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Comando para iniciar la aplicación
-CMD ["python", "app.py"]
+# ------------------ Copiar requerimientos e instalar ------------------
+COPY requirements.txt /app/
+WORKDIR /app
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install -r requirements.txt --timeout=120
+
+# ------------------ Copiar código fuente ------------------
+COPY . /app/
+
+# ------------------ Comando de producción ------------------
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app", "--workers=2", "--timeout=120"]

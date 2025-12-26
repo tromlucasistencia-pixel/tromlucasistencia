@@ -47,30 +47,36 @@
         </div>
     </div>
 </body>
-<!-- <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const numFlakes = 60;
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const numConfetti = 60;
+    const colors = ["#FF3C38", "#FFB400", "#00CFFF", "#9B59B6", "#2ECC71"];
 
-        for (let i = 0; i < numFlakes; i++) {
-            let flake = document.createElement("div");
-            flake.classList.add("snowflake");
+    for (let i = 0; i < numConfetti; i++) {
+        let confetti = document.createElement("div");
+        confetti.classList.add("confetti");
 
-            flake.innerHTML = "❄️";
+        // Símbolos de confeti: círculos, cuadrados o estrellas
+        const shapes = ["🎉","✨","⭐","🟢","🔵","🔴"];
+        confetti.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
 
-            // Posición inicial aleatoria
-            flake.style.left = Math.random() * 100 + "vw";
+        // Posición inicial aleatoria
+        confetti.style.left = Math.random() * 100 + "vw";
 
-            // Tamaño aleatorio
-            flake.style.fontSize = (Math.random() * 10 + 10) + "px";
+        // Tamaño aleatorio
+        confetti.style.fontSize = (Math.random() * 20 + 15) + "px";
 
-            // Opacidad
-            flake.style.opacity = Math.random() + 0.3;
+        // Color aleatorio
+        confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
 
-            // Duración distinta para cada copo
-            flake.style.animationDuration = (5 + Math.random() * 10) + "s";
+        // Opacidad
+        confetti.style.opacity = Math.random() + 0.5;
 
-            document.body.appendChild(flake);
-        }
-    });
-</script> -->
+        // Duración distinta para cada confeti
+        confetti.style.animationDuration = (3 + Math.random() * 5) + "s";
+
+        document.body.appendChild(confetti);
+    }
+});
+</script>
 </html>

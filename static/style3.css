@@ -157,24 +157,19 @@ button:hover {
   background-color: #C00000; /* color más oscuro cuando pasas el mouse */
 }
 
-/* .snowflake {
-        position: fixed;
-        top: -10px;
-        color: white;
-        pointer-events: none;
-        user-select: none;
-        z-index: 9999;
-        animation-name: fall;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-    }
+@keyframes fallConfetti {
+    0% { transform: translateY(-50px) rotate(0deg); }
+    100% { transform: translateY(100vh) rotate(360deg); }
+}
 
-    @keyframes fall {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(100vh); }
-    }
- */
-
+.confetti {
+    position: fixed;
+    top: -50px;
+    pointer-events: none;
+    animation-name: fallConfetti;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
 
 /*EMPEZAMOS A DARLE FORMATO EN TABLET Y CEL */
 

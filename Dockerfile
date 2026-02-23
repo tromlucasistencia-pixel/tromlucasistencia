@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-# Instalar dependencias del sistema necesarias para dlib, face-recognition, opencv, etc.
+# Instalar dependencias del sistema necesarias
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -15,22 +15,23 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libgl1 \
     libglib2.0-0 \
+    libffi-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear un entorno virtual y activarlo
+# Crear un entorno virtual
 RUN python -m venv /opt/venv
 
-# Activar el entorno virtual e instalar dependencias
+# Activar entorno virtual e instalar deps
 COPY requirements.txt /app/
 RUN /opt/venv/bin/pip install --upgrade pip setuptools && /opt/venv/bin/pip install -r /app/requirements.txt
 
-# Copiar el código fuente
+# Copiar código
 COPY . /app/
 WORKDIR /app
 
-# Usar el entorno virtual como PATH principal
+# Usar entorno virtual
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Comando para iniciar la aplicación
-CMD ["python", "app.py"]
+# Usar gunicorn para arrancar la app en Railway
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:$PORT"]

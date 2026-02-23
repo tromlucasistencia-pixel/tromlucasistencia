@@ -49,33 +49,22 @@
 </body>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const numConfetti = 60;
-    const colors = ["#FF3C38", "#FFB400", "#00CFFF", "#9B59B6", "#2ECC71"];
+    const numFlowers = 40;
+    const flowers = ["🌸","🌼","🌷","🌺","💐","🦋","🌿"];
 
-    for (let i = 0; i < numConfetti; i++) {
-        let confetti = document.createElement("div");
-        confetti.classList.add("confetti");
+    for (let i = 0; i < numFlowers; i++) {
+        let flower = document.createElement("div");
+        flower.classList.add("spring");
 
-        // Símbolos de confeti: círculos, cuadrados o estrellas
-        const shapes = ["🎉","✨","⭐","🟢","🔵","🔴"];
-        confetti.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
+        flower.innerHTML = flowers[Math.floor(Math.random() * flowers.length)];
 
-        // Posición inicial aleatoria
-        confetti.style.left = Math.random() * 100 + "vw";
+        flower.style.left = Math.random() * 100 + "vw";
+        flower.style.fontSize = (Math.random() * 20 + 20) + "px";
+        flower.style.animationDuration = (6 + Math.random() * 6) + "s";
+        flower.style.animationDelay = Math.random() * 5 + "s";
+        flower.style.opacity = Math.random() * 0.5 + 0.5;
 
-        // Tamaño aleatorio
-        confetti.style.fontSize = (Math.random() * 20 + 15) + "px";
-
-        // Color aleatorio
-        confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
-
-        // Opacidad
-        confetti.style.opacity = Math.random() + 0.5;
-
-        // Duración distinta para cada confeti
-        confetti.style.animationDuration = (3 + Math.random() * 5) + "s";
-
-        document.body.appendChild(confetti);
+        document.body.appendChild(flower);
     }
 });
 </script>

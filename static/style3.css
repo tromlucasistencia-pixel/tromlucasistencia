@@ -157,20 +157,30 @@ button:hover {
   background-color: #C00000; /* color más oscuro cuando pasas el mouse */
 }
 
-@keyframes fallConfetti {
-    0% { transform: translateY(-50px) rotate(0deg); }
-    100% { transform: translateY(100vh) rotate(360deg); }
-}
-
-.confetti {
+.spring {
     position: fixed;
-    top: -50px;
+    top: -10px;
+    animation: fall linear infinite;
     pointer-events: none;
-    animation-name: fallConfetti;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
 }
 
+@keyframes fall {
+    0% {
+        transform: translateX(0) translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateX(30px) translateY(25vh) rotate(90deg);
+    }
+    50% {
+        transform: translateX(-30px) translateY(50vh) rotate(180deg);
+    }
+    75% {
+        transform: translateX(20px) translateY(75vh) rotate(270deg);
+    }
+    100% {
+        transform: translateX(-20px) translateY(100vh) rotate(360deg);
+    }
+}
 /*EMPEZAMOS A DARLE FORMATO EN TABLET Y CEL */
 
 /*TABLET*/

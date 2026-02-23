@@ -1,6 +1,11 @@
+# ==========================
+# Dockerfile para Flask + dlib + OpenCV + MySQL + Excel
+# ==========================
 FROM python:3.9-slim
 
+# --------------------------
 # Instalar dependencias del sistema necesarias
+# --------------------------
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -16,22 +21,35 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     libffi-dev \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
+    wget \
+    unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear un entorno virtual
+# --------------------------
+# Crear entorno virtual
+# --------------------------
 RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Activar entorno virtual e instalar deps
+# --------------------------
+# Copiar e instalar requerimientos
+# --------------------------
 COPY requirements.txt /app/
-RUN /opt/venv/bin/pip install --upgrade pip setuptools && /opt/venv/bin/pip install -r /app/requirements.txt
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install -r /app/requirements.txt
 
-# Copiar código
+# --------------------------
+# Copiar el código fuente
+# --------------------------
 COPY . /app/
 WORKDIR /app
 
-# Usar entorno virtual
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Usar gunicorn para arrancar la app en Railway
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:$PORT"]
+# --------------------------
+# Comando para iniciar la app con Gunicorn
+# 4 workers, puerto dinámico Railway
+# --------------------------
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--workers", "4", "app:app"]
